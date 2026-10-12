@@ -2,7 +2,7 @@ package ub.cse.algo;
 
 import java.util.HashMap;
 
-// Hello Friends
+// Hello Friends and family
 /**
  * Class for running the grader. Will take in a command line argument specifying
  * the number of testcases to run.
