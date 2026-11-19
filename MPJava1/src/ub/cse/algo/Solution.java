@@ -25,6 +25,23 @@ public class Solution {
         this.bandwidths = info.bandwidths;
     }
 
+    float score(SolutionObject sol){
+        HashMap<Integer,Integer>  delays = Simulator.run(graph, clients, sol);
+        return Revenue.revenue(info,sol, delays, true, true, !this.bandwidths.equals(sol.bandwidths));
+    }
+
+    int [] getLoad (HashMap<Integer, ArrayList<Integer>> paths){
+        int [] load = new int[graph.size()];
+        for(ArrayList<Integer> path : paths.values()){
+            int idx = 1;
+            while (idx < path.size() - 1) {
+                load[path.get(idx)] += 1;
+                idx += 1;
+            }
+        }
+        return load;
+    }
+
     HashMap<Integer, ArrayList<Integer>> bfsPathsBandwidths(Graph graph, ArrayList<Client> clients) {
         /*
             Initialize the prior array with -1 for storing the node
@@ -61,6 +78,10 @@ public class Solution {
         }
         return pathsFromPriors(clients, priors);
     }
+
+    ArrayList<Integer> buyEverything()
+
+
     private  HashMap<Integer, ArrayList<Integer>> pathsFromPriors(ArrayList<Client> clients, int[] priors) {
         HashMap<Integer, ArrayList<Integer>> paths = new HashMap<>(clients.size());
         // For every client, traverse the prior array, creating the path
@@ -80,6 +101,8 @@ public class Solution {
         return paths;
     }
 
+
+
     /**
      * Method that returns the calculated
      * SolutionObject as found by your algorithm
@@ -88,7 +111,10 @@ public class Solution {
      */
     public SolutionObject outputPaths() {
         SolutionObject sol = new SolutionObject();
-        sol.paths = bfsPathsBandwidths(graph,clients);
+        sol.paths = bfsPaths(graph,clients);
+        sol.bandwidths = new ArrayList<>(this.bandwidths);
+        int[] load = getLoad(sol.paths);
+
         /* TODO:Your solution goes here */
         return sol;
     }
