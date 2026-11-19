@@ -109,6 +109,50 @@ public class Solution {
         return paths;
     }
 
+    float trim(SolutionObject sol, float bestScore){
+        float newScore;
+        ArrayList<Integer> problemRouters = new ArrayList<>();
+
+        // Pass 1: revert bought routers back to original
+        for(int idx = 0; idx < sol.bandwidths.size(); idx++){
+            // Skip nodes we never bought units for (this also skips the ISP)
+            if(sol.bandwidths.get(idx) <= this.bandwidths.get(idx)){
+                continue;
+            }
+            int oldBW = sol.bandwidths.get(idx);
+            sol.bandwidths.set(idx, this.bandwidths.get(idx));
+            newScore = score(sol);
+            if(newScore < bestScore) {
+                // this router needs extra units so put them back
+                sol.bandwidths.set(idx, oldBW);
+                problemRouters.add(idx);
+            }
+            else{
+                // Same or better with fewer units, so keep the lower bandwidth
+                bestScore = newScore;
+            }
+        }
+
+        // Pass 2: lower each problem router one unit at a time
+        for(int router : problemRouters){
+            // Stop one above original, since original was already shown to hurt
+            while(sol.bandwidths.get(router) - 1 > this.bandwidths.get(router)){
+                sol.bandwidths.set(router, sol.bandwidths.get(router) - 1);
+                float curScore = score(sol);
+                if(curScore >= bestScore){
+                    // Still as good with one less unit, so keep going
+                    bestScore = curScore;
+                }
+                else{
+                    // That unit was needed: put it back and move to the next router
+                    sol.bandwidths.set(router, sol.bandwidths.get(router) + 1);
+                    break;
+                }
+            }
+        }
+
+        return bestScore;
+    }
 
 
     /**
@@ -135,6 +179,7 @@ public class Solution {
         }
         else{
             sol.bandwidths = bandwidthBuy;
+            trim(sol,newScore);
         }
 
         /* TODO:Your solution goes here */
