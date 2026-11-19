@@ -79,7 +79,15 @@ public class Solution {
         return pathsFromPriors(clients, priors);
     }
 
-    ArrayList<Integer> buyEverything()
+    ArrayList<Integer> buyEverything(int[] load){
+        ArrayList<Integer> newBandwidths = new ArrayList<>(this.bandwidths);
+        for(int idx = 0; idx < load.length; idx ++){
+            if(idx != graph.contentProvider && load[idx] > newBandwidths.get(idx)){
+                newBandwidths.set(idx, load[idx]);
+            }
+        }
+        return newBandwidths;
+    }
 
 
     private  HashMap<Integer, ArrayList<Integer>> pathsFromPriors(ArrayList<Client> clients, int[] priors) {
@@ -111,9 +119,23 @@ public class Solution {
      */
     public SolutionObject outputPaths() {
         SolutionObject sol = new SolutionObject();
-        sol.paths = bfsPaths(graph,clients);
-        sol.bandwidths = new ArrayList<>(this.bandwidths);
+        sol.paths = bfsPathsBandwidths(graph,clients);
         int[] load = getLoad(sol.paths);
+        ArrayList<Integer> bandwidthCopy = new ArrayList<>(this.bandwidths);
+        ArrayList<Integer> bandwidthBuy = buyEverything(load);
+
+        sol.bandwidths = bandwidthCopy;
+        float origScore = score(sol);
+
+        sol.bandwidths = bandwidthBuy;
+        float newScore = score(sol);
+
+        if (origScore > newScore){
+            sol.bandwidths = bandwidthCopy;
+        }
+        else{
+            sol.bandwidths = bandwidthBuy;
+        }
 
         /* TODO:Your solution goes here */
         return sol;
