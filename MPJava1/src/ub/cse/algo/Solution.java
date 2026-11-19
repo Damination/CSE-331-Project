@@ -109,48 +109,50 @@ public class Solution {
         return paths;
     }
 
-    float trim(SolutionObject sol, float bestScore){
+    float trim(SolutionObject sol, float bestScore) {
         float newScore;
         ArrayList<Integer> problemRouters = new ArrayList<>();
 
         // Pass 1: revert bought routers back to original
-        for(int idx = 0; idx < sol.bandwidths.size(); idx++){
+        for (int idx = 0; idx < sol.bandwidths.size(); idx++) {
             // Skip nodes we never bought units for (this also skips the ISP)
-            if(sol.bandwidths.get(idx) <= this.bandwidths.get(idx)){
+            if (sol.bandwidths.get(idx) <= this.bandwidths.get(idx)) {
                 continue;
             }
             int oldBW = sol.bandwidths.get(idx);
             sol.bandwidths.set(idx, this.bandwidths.get(idx));
             newScore = score(sol);
-            if(newScore < bestScore) {
+            if (newScore < bestScore) {
                 // this router needs extra units so put them back
                 sol.bandwidths.set(idx, oldBW);
                 problemRouters.add(idx);
-            }
-            else{
+            } else {
                 // Same or better with fewer units, so keep the lower bandwidth
                 bestScore = newScore;
             }
         }
 
-        // Pass 2: lower each problem router one unit at a time
-        for(int router : problemRouters){
-            // Stop one above original, since original was already shown to hurt
-            while(sol.bandwidths.get(router) - 1 > this.bandwidths.get(router)){
-                sol.bandwidths.set(router, sol.bandwidths.get(router) - 1);
-                float curScore = score(sol);
-                if(curScore >= bestScore){
-                    // Still as good with one less unit, so keep going
-                    bestScore = curScore;
-                }
-                else{
-                    // That unit was needed: put it back and move to the next router
-                    sol.bandwidths.set(router, sol.bandwidths.get(router) + 1);
-                    break;
+        // Pass 2: binary search each problem router for the fewest units that keep the score
+        for (int router : problemRouters) {
+            int low = this.bandwidths.get(router) + 1;   // lowest value worth trying (original was too low)
+            int high = sol.bandwidths.get(router);       // current value, known to work
+            while (low < high) {
+                int mid = (low + high) / 2;
+                sol.bandwidths.set(router, mid);
+                float midScore = score(sol);
+                if (midScore >= bestScore) {
+                    // mid still works, so the answer is mid or lower
+                    bestScore = midScore;
+                    high = mid;
+                } else {
+                    // mid is too low, so the answer is above it
+                    low = mid + 1;
                 }
             }
-        }
+            // high is always the lowest value we know works
+            sol.bandwidths.set(router, high);
 
+        }
         return bestScore;
     }
 
