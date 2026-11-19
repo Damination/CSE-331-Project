@@ -34,6 +34,7 @@ public class Solution {
         int[] level = new int[graph.size()];
         Arrays.fill(level, -1);
         Arrays.fill(priors, -1);
+        level[graph.contentProvider] = 0;
         // Run BFS, finding the nodes parent in the shortest path
         Queue<Integer> searchQueue = new LinkedList<>();
         searchQueue.add(graph.contentProvider);
@@ -63,7 +64,6 @@ public class Solution {
     private  HashMap<Integer, ArrayList<Integer>> pathsFromPriors(ArrayList<Client> clients, int[] priors) {
         HashMap<Integer, ArrayList<Integer>> paths = new HashMap<>(clients.size());
         // For every client, traverse the prior array, creating the path
-        clients.sort((bw1, bw2) -> Integer.compare(this.bandwidths.get(bw2.id), this.bandwidths.get(bw1.id)));
         for (Client client : clients) {
             ArrayList<Integer> path = new ArrayList<>();
             int currentNode = client.id;
